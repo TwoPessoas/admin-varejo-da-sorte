@@ -15,6 +15,12 @@ import DrawNumberListPage from "../pages/drawNumber/DrawNumberListPage";
 import DrawNumberDetailPage from "../pages/drawNumber/DrawNumberDetailPage";
 import DrawNumberCreatePage from "../pages/drawNumber/DrawNumberCreatePage";
 import DrawNumberUpdatePage from "../pages/drawNumber/DrawNumberUpdatePage";
+import GameOpportunityListPage from "../pages/GameOpportunity/GameOpportunityListPage";
+import GameOpportunityDetailPage from "../pages/GameOpportunity/GameOpportunityDetailPage";
+import InvoiceListPage from "../pages/invoices/InvoiceListPage";
+import InvoiceDetailPage from "../pages/invoices/InvoiceDetailPage";
+import InvoiceCreatePage from "../pages/invoices/InvoiceCreatePage";
+import InvoiceUpdatePage from "../pages/invoices/InvoiceUpdatePage";
 
 const router = createBrowserRouter([
   {
@@ -73,6 +79,30 @@ const router = createBrowserRouter([
             path: "/draw-numbers/:id/edit",
             element: <DrawNumberUpdatePage />,
           },*/
+
+          /* Opportunities */
+          {
+            path: "/opportunities",
+            element: <GameOpportunityListPage />,
+          },
+          {
+            path: "/opportunities/:id",
+            element: <GameOpportunityDetailPage />,
+          },
+
+          /* Invoice */
+          {
+            path: "/invoices",
+            element: <InvoiceListPage />,
+          },
+          {
+            path: "/invoices/:id",
+            element: <InvoiceDetailPage />,
+          },
+          {
+            path: "/invoices/new",
+            element: <InvoiceCreatePage />,
+          },
 
           /* Products */
           {

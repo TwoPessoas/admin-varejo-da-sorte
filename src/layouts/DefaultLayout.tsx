@@ -37,7 +37,7 @@ const DefaultLayout = () => {
     },
     {
       name: "Notas Fiscais",
-      path: "/notas-fiscais",
+      path: "/invoices",
       icon: <FileText className="w-5 h-5" />,
     },
     {
