@@ -1,8 +1,8 @@
-// src/pages/InvoiceListPage.tsx
+// src/pages/VoucherListPage.tsx
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // Importa useLocation para ler query params
-import useInvoice from "../../hooks/useInvoice";
+import { useNavigate } from "react-router-dom";
 import {
+  Edit,
   Eye,
   Trash2,
   Plus,
@@ -13,44 +13,42 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
-  User,
+  CalendarDays, // Adicionado para indicar filtro de data
 } from "lucide-react";
+import useVoucher from "../../hooks/useVoucher";
 import ExportModal from "../../components/ExportModal";
-import ConfirmationModal from "../../components/ConfirmationModal";
 
-export default function InvoiceListPage() {
+export default function VoucherListPage() {
   const {
-    invoices,
-    fetchInvoices,
-    deleteInvoice,
-    exportInvoices,
+    vouchers,
+    fetchVouchers,
+    deleteVoucher,
+    exportVouchers,
     isLoading,
     error,
     totalEntities,
     currentPage,
     totalPages,
-  } = useInvoice();
+  } = useVoucher(); // Usa o hook useVoucher
 
   const navigate = useNavigate();
-  const location = useLocation(); // Para ler query parameters da URL
 
-  // Estados para filtros (valores dos inputs)
-  // Adiciona campos de filtro específicos para faturas
+  // Estados para filtros (valores dos inputs do formulário)
   const [filterInputs, setFilterInputs] = useState({
-    fiscalCode: "",
-    cnpj: "",
-    store: "",
-    pdv: "",
-    clientId: "", // Para filtrar faturas por um cliente específico
+    id: "", // Se um dia for filtrável por ID
+    coupom: "",
+    drawDate: "", // Para filtrar a data do sorteio (como string)
+    startDate: "", // Para filtrar por data de criação inicial
+    endDate: "", // Para filtrar por data de criação final
   });
 
   // Estados para filtros aplicados (valores que serão enviados para a API)
   const [appliedFilters, setAppliedFilters] = useState({
-    fiscalCode: "",
-    cnpj: "",
-    store: "",
-    pdv: "",
-    clientId: "",
+    id: "",
+    coupom: "",
+    drawDate: "",
+    startDate: "",
+    endDate: "",
   });
 
   // Estados para paginação
@@ -60,41 +58,20 @@ export default function InvoiceListPage() {
   });
 
   // Estado para controle do modal de exclusão
-  const [deletingInvoice, setDeletingInvoice] = useState<number | null>(null);
+  const [deletingVoucher, setDeletingVoucher] = useState<number | null>(null);
   // Estado para controle da exportação
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  // Efeito para buscar faturas quando os filtros aplicados ou a paginação mudam
+  // Efeito para buscar vouchers quando os filtros aplicados ou a paginação mudam
   useEffect(() => {
-    fetchInvoices({
-      ...appliedFilters, // Usa os filtros aplicados
+    fetchVouchers({
+      ...appliedFilters, // Usa os filtros aplicados, não os inputs
       page: pagination.page,
       limit: pagination.limit,
     });
-    // Adiciona `fetchInvoices` às dependências para garantir que o efeito seja reexecutado
-    // se a função `fetchInvoices` for recriada (embora em hooks geralmente não aconteça)
-  }, [appliedFilters, pagination.page, pagination.limit]);
+  }, [appliedFilters, pagination.page, pagination.limit]); // Adicionado fetchVouchers nas dependências para ESLint
 
-  // Carrega os dados iniciais na primeira renderização e verifica query params
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const clientIdFromUrl = queryParams.get("clientId");
-
-    // Se clientId estiver na URL, aplica como filtro inicial
-    if (clientIdFromUrl) {
-      setFilterInputs((prev) => ({ ...prev, clientId: clientIdFromUrl }));
-      setAppliedFilters((prev) => ({ ...prev, clientId: clientIdFromUrl }));
-      // Isso fará com que o useEffect principal chame fetchInvoices com o filtro aplicado
-    } else {
-      // Se não houver clientId na URL, faz a primeira busca sem ele
-      fetchInvoices({
-        page: 1,
-        limit: 10,
-      });
-    }
-  }, [location.search]); // Depende da mudança na URL
-
-  // Lida com a mudança nos inputs de filtro (não executa busca)
+  // Lida com a mudança nos inputs de filtro (não executa busca imediatamente)
   const handleFilterInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const { name, value } = e.target;
@@ -115,12 +92,11 @@ export default function InvoiceListPage() {
   // Lida com a limpeza dos filtros
   const handleClearFilters = useCallback(() => {
     const emptyFilters = {
-      fiscalCode: "",
-      cnpj: "",
-      store: "",
-      numCoupon: "",
-      pdv: "",
-      clientId: "",
+      id: "",
+      coupom: "",
+      drawDate: "",
+      startDate: "",
+      endDate: "",
     };
     setFilterInputs(emptyFilters); // Limpa os inputs
     setAppliedFilters(emptyFilters); // Limpa os filtros aplicados
@@ -158,25 +134,25 @@ export default function InvoiceListPage() {
     []
   );
 
-  // Lida com a exclusão de fatura
+  // Lida com a exclusão de voucher
   const handleDelete = async () => {
-    if (deletingInvoice) {
-      const success = await deleteInvoice(deletingInvoice);
+    if (deletingVoucher) {
+      const success = await deleteVoucher(deletingVoucher);
       if (success) {
-        // Após a exclusão, tenta buscar as faturas novamente.
+        // Após a exclusão, tenta buscar os vouchers novamente.
         // Se a página atual ficar vazia e não for a primeira, volta para a anterior.
-        if (invoices.length === 1 && currentPage > 1) {
+        if (vouchers.length === 1 && currentPage > 1) {
           setPagination((prev) => ({ ...prev, page: prev.page - 1 }));
         } else {
           // Rebusca na página atual, considerando os filtros aplicados
-          fetchInvoices({
+          fetchVouchers({
             ...appliedFilters,
             page: currentPage,
             limit: pagination.limit,
           });
         }
       }
-      setDeletingInvoice(null); // Fecha modal
+      setDeletingVoucher(null); // Fecha modal
     }
   };
 
@@ -185,15 +161,19 @@ export default function InvoiceListPage() {
     async (exportParams: any) => {
       // Combina os filtros aplicados com os parâmetros de exportação
       const combinedParams = {
-        ...exportParams.filters, // Filtros da listagem
+        // Filtros de busca da listagem
+        coupom: appliedFilters.coupom,
+        drawDate: appliedFilters.drawDate,
+        // Filtros de data de criação
         startDate: exportParams.startDate,
         endDate: exportParams.endDate,
+        // Formato de exportação
         format: exportParams.format,
       };
 
-      return await exportInvoices(combinedParams);
+      return await exportVouchers(combinedParams);
     },
-    [exportInvoices] // 'appliedFilters' não precisa aqui, pois 'exportParams.filters' já traz o que foi aplicado
+    [exportVouchers, appliedFilters]
   );
 
   // Verifica se há filtros aplicados para mostrar indicador visual
@@ -212,7 +192,7 @@ export default function InvoiceListPage() {
     return Array.from({ length: pagination.limit }).map((_, index) => (
       <tr key={`skeleton-${index}`} className="animate-pulse">
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="h-4 bg-gray-200 rounded w-full"></div>
@@ -224,42 +204,41 @@ export default function InvoiceListPage() {
           <div className="h-4 bg-gray-200 rounded w-1/2"></div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
-          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap">
-          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap">
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-        </td>
-        <td className="px-6 py-4 whitespace-nowrap">
           <div className="h-4 bg-gray-200 rounded w-full"></div>
         </td>
       </tr>
     ));
   }, [isLoading, pagination.limit]);
 
-  // Formata o valor da fatura
-  const formatInvoiceValue = useCallback((value: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
-  }, []);
+  // Função auxiliar para formatar datas, se necessário (ex: de ISO para dd/mm/yyyy)
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return "-";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch (e) {
+      console.error("Erro ao formatar data:", dateString, e);
+      return dateString; // Retorna original se houver erro
+    }
+  };
 
   return (
     <div className="space-y-8 p-4 lg:p-6">
       {/* Cabeçalho da Página */}
       <div className="page-header flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <h1 className="page-title mb-4 sm:mb-0">Lista de Faturas</h1>
+        <h1 className="page-title mb-4 sm:mb-0">Lista de Vouchers</h1>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-          {/* Botão Nova Fatura */}
+          {/* Botão Novo Voucher */}
           <button
             className="btn btn-primary w-full sm:w-auto"
-            onClick={() => navigate("/invoices/new")}
+            onClick={() => navigate("/vouchers/new")}
           >
             <Plus className="w-5 h-5 mr-2" />
-            Nova Fatura
+            Novo Voucher
           </button>
 
           {/* Botão Exportar */}
@@ -287,7 +266,7 @@ export default function InvoiceListPage() {
         <div className="card-header flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Filter className="w-5 h-5 text-gray-700" />
-            <h2 className="card-title">Filtrar Faturas</h2>
+            <h2 className="card-title">Filtrar Vouchers</h2>
             {hasAppliedFilters && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Filtros ativos
@@ -300,49 +279,13 @@ export default function InvoiceListPage() {
             </span>
           )}
         </div>
-        <div className="card-body grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="card-body grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <input
             type="text"
             className="form-input"
-            placeholder="Código Fiscal"
-            name="fiscalCode"
-            value={filterInputs.fiscalCode}
-            onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
-          />
-          <input
-            type="text"
-            className="form-input"
-            placeholder="CNPJ"
-            name="cnpj"
-            value={filterInputs.cnpj}
-            onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
-          />
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Loja"
-            name="store"
-            value={filterInputs.store}
-            onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
-          />
-          <input
-            type="text"
-            className="form-input"
-            placeholder="PDV"
-            name="pdv"
-            value={filterInputs.pdv}
-            onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
-          />
-          <input
-            type="text"
-            className="form-input"
-            placeholder="ID do Cliente"
-            name="clientId"
-            value={filterInputs.clientId}
+            placeholder="Filtrar Cupom"
+            name="coupom"
+            value={filterInputs.coupom}
             onChange={handleFilterInputChange}
             onKeyPress={handleFilterKeyPress}
           />
@@ -385,82 +328,61 @@ export default function InvoiceListPage() {
         </div>
       </div>
 
-      {/* Tabela de Faturas */}
+      {/* Tabela de Vouchers */}
       <div className="card table-container">
         <div className="card-body p-0">
           <table className="table data-table">
             <thead>
               <tr>
                 <th className="w-10">ID</th>
-                <th>Código Fiscal</th>
-                <th>Cliente</th>
-                <th>Valor</th>
-                <th>PDV</th>
-                <th>Loja</th>
                 <th>Cupom</th>
-                <th>CNPJ</th>
+                <th>Data Sorteio</th>
+                <th>Valor Voucher</th>
                 <th className="text-center">Ações</th>
               </tr>
             </thead>
             <tbody>
               {isLoading && renderSkeletonRows}
-              {!isLoading && invoices.length === 0 && (
+              {!isLoading && vouchers.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="text-center text-gray-500 py-8">
+                  <td colSpan={5} className="text-center text-gray-500 py-8">
                     {hasAppliedFilters
-                      ? "Nenhuma fatura encontrada com os filtros aplicados."
-                      : "Nenhuma fatura cadastrada."}
+                      ? "Nenhum voucher encontrado com os filtros aplicados."
+                      : "Nenhum voucher cadastrado."}
                   </td>
                 </tr>
               )}
               {!isLoading &&
-                invoices.map((invoice) => (
-                  <tr key={invoice.id} className="table-row">
-                    <td>{invoice.id}</td>
-                    <td>{invoice.fiscalCode}</td>
+                vouchers.map((voucher) => (
+                  <tr key={voucher.id} className="table-row">
+                    <td>{voucher.id}</td>
+                    <td>{voucher.coupom}</td>
+                    <td>{formatDate(voucher.drawDate)}</td>
                     <td>
-                      {invoice.clientName || "N/A"}
-                      {invoice.clientCpf && ` (${invoice.clientCpf})`}
+                      {voucher.voucherValue !== null
+                        ? `R\$ ${voucher.voucherValue}`
+                        : "-"}
                     </td>
-                    <td>{formatInvoiceValue(invoice.invoceValue)}</td>
-                    <td>{invoice.pdv || "N/A"}</td>
-                    <td>{invoice.store || "N/A"}</td>
-                    <td>{invoice.numCoupon || "N/A"}</td>
-                    <td>{invoice.cnpj || "N/A"}</td>
                     <td className="flex items-center justify-center space-x-2">
-                      {/* Botão Ver Cliente */}
-                      {invoice.clientId && (
-                        <button
-                          className="btn btn-info btn-sm"
-                          onClick={() =>
-                            navigate(`/clients/${invoice.clientId}`)
-                          }
-                          title="Ver Cliente"
-                        >
-                          <User className="w-4 h-4" />
-                        </button>
-                      )}
-                      {/* Botão Ver Detalhes da Fatura */}
+                      {/* Botões de Ação */}
+                      {/* Não há um "notas fiscais" para voucher, então removeremos ou adaptaremos */}
                       <button
                         className="btn btn-primary btn-sm"
-                        onClick={() => navigate(`/invoices/${invoice.id}`)}
+                        onClick={() => navigate(`/vouchers/${voucher.id}`)}
                         title="Ver Detalhes"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      {/* Botão Atualizar (se a rota PUT for habilitada) */}
-                      {/* A rota PUT está comentada no backend, então este botão está aqui como placeholder */}
-                      {/* <button
+                      <button
                         className="btn btn-success btn-sm"
-                        onClick={() => navigate(`/invoices/${invoice.id}/edit`)}
+                        onClick={() => navigate(`/vouchers/${voucher.id}/edit`)}
                         title="Atualizar"
                       >
                         <Edit className="w-4 h-4" />
-                      </button> */}
-                      {/* Botão Deletar */}
+                      </button>
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => setDeletingInvoice(invoice.id)}
+                        onClick={() => setDeletingVoucher(voucher.id)}
                         title="Deletar"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -472,7 +394,6 @@ export default function InvoiceListPage() {
           </table>
         </div>
       </div>
-
       {/* Controles de Paginação */}
       {!isLoading && totalEntities > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
@@ -480,7 +401,7 @@ export default function InvoiceListPage() {
             Mostrando{" "}
             {Math.min(totalEntities, (currentPage - 1) * pagination.limit + 1)}{" "}
             - {Math.min(totalEntities, currentPage * pagination.limit)} de{" "}
-            {totalEntities} faturas
+            {totalEntities} vouchers
           </div>
           <div className="flex items-center space-x-4">
             {/* Seleção de Limite por Página */}
@@ -531,27 +452,46 @@ export default function InvoiceListPage() {
       )}
 
       {/* Modal para Confirmar Exclusão */}
-      <ConfirmationModal
-        isOpen={deletingInvoice !== null}
-        onClose={() => setDeletingInvoice(null)}
-        onConfirm={handleDelete}
-        title="Confirmar Exclusão"
-        message={`Tem certeza que deseja excluir a fatura de ID ${deletingInvoice}? Essa ação não pode ser desfeita!`}
-        confirmText="Excluir"
-        cancelText="Cancelar"
-        confirmButtonClass="btn-danger"
-        isProcessing={isLoading}
-      />
-
-      {/* Modal de Exportação */}
+      {deletingVoucher && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h3 className="text-lg font-bold">Confirmar Exclusão</h3>
+            </div>
+            <div className="modal-body">
+              <p className="text-sm text-gray-600">
+                Tem certeza que deseja excluir o voucher de ID{" "}
+                <strong>{deletingVoucher}</strong>? Essa ação não pode ser
+                desfeita!
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button
+                className="btn btn-secondary"
+                onClick={() => setDeletingVoucher(null)}
+                disabled={isLoading}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn btn-danger"
+                onClick={handleDelete}
+                disabled={isLoading}
+              >
+                Excluir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         onExport={handleExport}
         isLoading={isLoading}
-        title="Exportar Faturas"
-        currentFilters={appliedFilters} // Passa os filtros atuais para o modal
-        entityName="faturas"
+        title="Exportar Vouchers"
+        currentFilters={appliedFilters} // Passa os filtros atuais (que serão usados no ExportModal para o startDate/endDate)
+        entityName="vouchers"
       />
     </div>
   );

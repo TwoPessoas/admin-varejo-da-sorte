@@ -21,6 +21,10 @@ import InvoiceListPage from "../pages/invoices/InvoiceListPage";
 import InvoiceDetailPage from "../pages/invoices/InvoiceDetailPage";
 import InvoiceCreatePage from "../pages/invoices/InvoiceCreatePage";
 import InvoiceUpdatePage from "../pages/invoices/InvoiceUpdatePage";
+import VoucherListPage from "../pages/vouchers/VoucherListPage";
+import VoucherDetailPage from "../pages/vouchers/VoucherDetailPage";
+import VoucherCreatePage from "../pages/vouchers/VoucherCreatePage";
+import VoucherUpdatePage from "../pages/vouchers/VoucherUpdatePage";
 
 const router = createBrowserRouter([
   {
@@ -71,14 +75,6 @@ const router = createBrowserRouter([
             path: "/draw-numbers/:id",
             element: <DrawNumberDetailPage />,
           },
-          /*{
-            path: "/draw-numbers/new",
-            element: <DrawNumberCreatePage />,
-          },
-          {
-            path: "/draw-numbers/:id/edit",
-            element: <DrawNumberUpdatePage />,
-          },*/
 
           /* Opportunities */
           {
@@ -102,6 +98,24 @@ const router = createBrowserRouter([
           {
             path: "/invoices/new",
             element: <InvoiceCreatePage />,
+          },
+
+          /* Vouchers */
+          {
+            path: "/vouchers",
+            element: <VoucherListPage />,
+          },
+          {
+            path: "/vouchers/:id",
+            element: <VoucherDetailPage />,
+          },
+          {
+            path: "/vouchers/new",
+            element: <VoucherCreatePage />,
+          },
+          {
+            path: "/vouchers/:id/edit",
+            element: <VoucherUpdatePage />,
           },
 
           /* Products */
