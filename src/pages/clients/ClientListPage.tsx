@@ -6,7 +6,6 @@ import {
   Eye,
   Trash2,
   FileText,
-  Loader,
   Plus,
   Download,
   XCircle,
@@ -16,9 +15,13 @@ import {
   ArrowRight,
   X
 } from 'lucide-react';
+import ExportModal from '../../components/ExportModal';
+
 
 export default function ClientListPage() {
-  const { clients, fetchClients, deleteClient, isLoading, error, totalClients, currentPage, totalPages } = useClient();
+  const { clients, fetchClients, deleteClient, exportClients, isLoading, error, totalEntities, currentPage, totalPages } = useClient();
+  console.log('clients', { clients, isLoading, error, totalEntities, currentPage, totalPages });
+
   const navigate = useNavigate();
 
   // Estados para filtros (valores dos inputs)
@@ -46,7 +49,7 @@ export default function ClientListPage() {
   // Estado para controle do modal de exclusão
   const [deletingClient, setDeletingClient] = useState<number | null>(null);
   // Estado para controle da exportação
-  const [isExporting, setIsExporting] = useState(false);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Efeito para buscar clientes quando os filtros aplicados ou a paginação mudam
   useEffect(() => {
@@ -138,19 +141,17 @@ export default function ClientListPage() {
   };
 
   // Lida com a exportação (simulada)
-  const handleExport = async () => {
-    setIsExporting(true);
-    try {
-      // Simula lógica de exportação (por exemplo, uma chamada de API para gerar um CSV)
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simula atraso
-      alert('Clientes exportados com sucesso!');
-    } catch (error) {
-      console.error('Erro ao exportar:', error);
-      alert('Falha na exportação. Tente novamente.');
-    } finally {
-      setIsExporting(false);
-    }
-  };
+  const handleExport = useCallback(async (exportParams: any) => {
+    // Combina os filtros aplicados com os parâmetros de exportação
+    const combinedParams = {
+      ...exportParams.filters, // Filtros da listagem
+      startDate: exportParams.startDate,
+      endDate: exportParams.endDate,
+      format: exportParams.format,
+    };
+
+    return await exportClients(combinedParams);
+  }, [exportClients, appliedFilters]);
 
   // Verifica se há filtros aplicados para mostrar indicador visual
   const hasAppliedFilters = useMemo(() => {
@@ -204,14 +205,10 @@ export default function ClientListPage() {
           {/* Botão Exportar */}
           <button
             className="btn btn-secondary w-full sm:w-auto"
-            onClick={handleExport}
-            disabled={isExporting || isLoading}
+            onClick={() => setIsExportModalOpen(true)} // Abre o modal em vez de exportar diretamente
+            disabled={isLoading}
           >
-            {isExporting ? (
-              <Loader className="w-5 h-5 animate-spin mr-2" />
-            ) : (
-              <Download className="w-5 h-5 mr-2" />
-            )}
+            <Download className="w-5 h-5 mr-2" />
             Exportar
           </button>
         </div>
@@ -244,15 +241,6 @@ export default function ClientListPage() {
           )}
         </div>
         <div className="card-body grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Filtrar ID"
-            name="id"
-            value={filterInputs.id}
-            onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
-          />
           <input
             type="text"
             className="form-input"
@@ -386,12 +374,11 @@ export default function ClientListPage() {
           </table>
         </div>
       </div>
-
       {/* Controles de Paginação */}
-      {!isLoading && totalClients > 0 && (
+      {!isLoading && totalEntities > 0 && (
         <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
           <div className="text-sm text-gray-700">
-            Mostrando {Math.min(totalClients, (currentPage - 1) * pagination.limit + 1)} - {Math.min(totalClients, currentPage * pagination.limit)} de {totalClients} clientes
+            Mostrando {Math.min(totalEntities, (currentPage - 1) * pagination.limit + 1)} - {Math.min(totalEntities, currentPage * pagination.limit)} de {totalEntities} clientes
           </div>
           <div className="flex items-center space-x-4">
             {/* Seleção de Limite por Página */}
@@ -463,6 +450,15 @@ export default function ClientListPage() {
           </div>
         </div>
       )}
+      <ExportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+        onExport={handleExport}
+        isLoading={isLoading}
+        title="Exportar Clientes"
+        currentFilters={appliedFilters} // Passa os filtros atuais
+        entityName="clientes"
+      />
     </div>
   );
 }
