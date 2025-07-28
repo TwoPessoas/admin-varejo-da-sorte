@@ -42,7 +42,7 @@ const DefaultLayout = () => {
     },
     {
       name: "Oportunidades",
-      path: "/oportunidades",
+      path: "/opportunities",
       icon: <Briefcase className="w-5 h-5" />,
     },
     {
