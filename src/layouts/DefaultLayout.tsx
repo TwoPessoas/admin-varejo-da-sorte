@@ -47,7 +47,7 @@ const DefaultLayout = () => {
     },
     {
       name: "Números da Sorte",
-      path: "/numeros-da-sorte",
+      path: "/draw-numbers",
       icon: <Hash className="w-5 h-5" />,
     },
     { name: "Vouchers", path: "/vouchers", icon: <Gift className="w-5 h-5" /> },

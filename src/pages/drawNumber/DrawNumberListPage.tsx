@@ -1,12 +1,12 @@
+// src/pages/DrawNumberListPage.tsx
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import useClient from "../../hooks/useClient"; // Assumindo o caminho correto do hook
 import { useNavigate } from "react-router-dom";
+
+// Importar ícones do lucide-react
 import {
   Edit,
   Eye,
   Trash2,
-  FileText,
-  Plus,
   Download,
   XCircle,
   Search,
@@ -14,46 +14,36 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  FileText, // Usado para "Ver Fatura"
 } from "lucide-react";
+import useDrawNumber from "../../hooks/useDrawNumber";
 import ExportModal from "../../components/ExportModal";
 
-export default function ClientListPage() {
+export default function DrawNumberListPage() {
   const {
-    clients,
-    fetchClients,
-    deleteClient,
-    exportClients,
+    drawNumbers,
+    fetchDrawNumbers,
+    deleteDrawNumber,
+    exportDrawNumbers,
     isLoading,
     error,
     totalEntities,
     currentPage,
     totalPages,
-  } = useClient();
-  console.log("clients", {
-    clients,
-    isLoading,
-    error,
-    totalEntities,
-    currentPage,
-    totalPages,
-  });
+  } = useDrawNumber();
 
   const navigate = useNavigate();
 
   // Estados para filtros (valores dos inputs)
   const [filterInputs, setFilterInputs] = useState({
-    id: "",
-    name: "",
-    cpf: "",
-    cel: "",
+    invoiceId: "",
+    number: "",
   });
 
   // Estados para filtros aplicados (valores que serão enviados para a API)
   const [appliedFilters, setAppliedFilters] = useState({
-    id: "",
-    name: "",
-    cpf: "",
-    cel: "",
+    invoiceId: "",
+    number: "",
   });
 
   // Estados para paginação
@@ -63,26 +53,20 @@ export default function ClientListPage() {
   });
 
   // Estado para controle do modal de exclusão
-  const [deletingClient, setDeletingClient] = useState<number | null>(null);
+  const [deletingDrawNumberId, setDeletingDrawNumberId] = useState<
+    number | null
+  >(null);
   // Estado para controle da exportação
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
-  // Efeito para buscar clientes quando os filtros aplicados ou a paginação mudam
+  // Efeito para buscar números da sorte quando os filtros aplicados ou a paginação mudam
   useEffect(() => {
-    fetchClients({
+    fetchDrawNumbers({
       ...appliedFilters, // Usa os filtros aplicados, não os inputs
       page: pagination.page,
       limit: pagination.limit,
     });
   }, [appliedFilters, pagination.page, pagination.limit]);
-
-  // Carrega os dados iniciais na primeira renderização
-  useEffect(() => {
-    fetchClients({
-      page: 1,
-      limit: 10,
-    });
-  }, []); // Executa apenas uma vez
 
   // Lida com a mudança nos inputs de filtro (não executa busca)
   const handleFilterInputChange = useCallback(
@@ -105,10 +89,8 @@ export default function ClientListPage() {
   // Lida com a limpeza dos filtros
   const handleClearFilters = useCallback(() => {
     const emptyFilters = {
-      id: "",
-      name: "",
-      cpf: "",
-      cel: "",
+      invoiceId: "",
+      number: "",
     };
     setFilterInputs(emptyFilters); // Limpa os inputs
     setAppliedFilters(emptyFilters); // Limpa os filtros aplicados
@@ -146,42 +128,40 @@ export default function ClientListPage() {
     []
   );
 
-  // Lida com a exclusão de cliente
+  // Lida com a exclusão de número da sorte
   const handleDelete = async () => {
-    if (deletingClient) {
-      const success = await deleteClient(deletingClient);
+    if (deletingDrawNumberId) {
+      const success = await deleteDrawNumber(deletingDrawNumberId);
       if (success) {
-        // Após a exclusão, tenta buscar os clientes novamente.
+        // Após a exclusão, tenta buscar os números novamente.
         // Se a página atual ficar vazia e não for a primeira, volta para a anterior.
-        if (clients.length === 1 && currentPage > 1) {
+        if (drawNumbers.length === 1 && currentPage > 1) {
           setPagination((prev) => ({ ...prev, page: prev.page - 1 }));
         } else {
           // Rebusca na página atual, considerando os filtros aplicados
-          fetchClients({
+          fetchDrawNumbers({
             ...appliedFilters,
             page: currentPage,
             limit: pagination.limit,
           });
         }
       }
-      setDeletingClient(null); // Fecha modal
+      setDeletingDrawNumberId(null); // Fecha modal
     }
   };
 
-  // Lida com a exportação (simulada)
+  // Lida com a exportação
   const handleExport = useCallback(
     async (exportParams: any) => {
-      // Combina os filtros aplicados com os parâmetros de exportação
       const combinedParams = {
         ...exportParams.filters, // Filtros da listagem
         startDate: exportParams.startDate,
         endDate: exportParams.endDate,
         format: exportParams.format,
       };
-
-      return await exportClients(combinedParams);
+      return await exportDrawNumbers(combinedParams);
     },
-    [exportClients, appliedFilters]
+    [exportDrawNumbers, appliedFilters]
   );
 
   // Verifica se há filtros aplicados para mostrar indicador visual
@@ -206,7 +186,16 @@ export default function ClientListPage() {
           <div className="h-4 bg-gray-200 rounded w-full"></div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
           <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
         </td>
         <td className="px-6 py-4 whitespace-nowrap">
           <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -222,21 +211,12 @@ export default function ClientListPage() {
     <div className="space-y-8 p-4 lg:p-6">
       {/* Cabeçalho da Página */}
       <div className="page-header flex flex-col sm:flex-row justify-between items-start sm:items-center">
-        <h1 className="page-title mb-4 sm:mb-0">Lista de Clientes</h1>
+        <h1 className="page-title mb-4 sm:mb-0">Números da Sorte</h1>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full sm:w-auto">
-          {/* Botão Novo Cliente */}
-          <button
-            className="btn btn-primary w-full sm:w-auto"
-            onClick={() => navigate("/clients/new")}
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Novo Cliente
-          </button>
-
           {/* Botão Exportar */}
           <button
             className="btn btn-secondary w-full sm:w-auto"
-            onClick={() => setIsExportModalOpen(true)} // Abre o modal em vez de exportar diretamente
+            onClick={() => setIsExportModalOpen(true)}
             disabled={isLoading}
           >
             <Download className="w-5 h-5 mr-2" />
@@ -258,7 +238,7 @@ export default function ClientListPage() {
         <div className="card-header flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Filter className="w-5 h-5 text-gray-700" />
-            <h2 className="card-title">Filtrar Clientes</h2>
+            <h2 className="card-title">Filtrar Números da Sorte</h2>
             {hasAppliedFilters && (
               <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                 Filtros ativos
@@ -275,27 +255,18 @@ export default function ClientListPage() {
           <input
             type="text"
             className="form-input"
-            placeholder="Filtrar Nome"
-            name="name"
-            value={filterInputs.name}
+            placeholder="Filtrar por ID da Fatura"
+            name="invoiceId"
+            value={filterInputs.invoiceId}
             onChange={handleFilterInputChange}
             onKeyPress={handleFilterKeyPress}
           />
           <input
             type="text"
             className="form-input"
-            placeholder="Filtrar CPF"
-            name="cpf"
-            value={filterInputs.cpf}
-            onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
-          />
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Filtrar Celular"
-            name="cel"
-            value={filterInputs.cel}
+            placeholder="Filtrar por Número da Sorte"
+            name="number"
+            value={filterInputs.number}
             onChange={handleFilterInputChange}
             onKeyPress={handleFilterKeyPress}
           />
@@ -338,65 +309,72 @@ export default function ClientListPage() {
         </div>
       </div>
 
-      {/* Tabela de Clientes */}
+      {/* Tabela de Números da Sorte */}
       <div className="card table-container">
         <div className="card-body p-0">
           <table className="table data-table">
             <thead>
               <tr>
                 <th className="w-10">ID</th>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Celular</th>
+                <th>Número da Sorte</th>
+                <th>Ativo</th>
+                <th>Ganhador Em</th>
+                <th>ID Fatura</th>
+                <th>Cód. Fiscal Fatura</th>
+                <th>Nome Cliente</th>
                 <th className="text-center">Ações</th>
               </tr>
             </thead>
             <tbody>
               {isLoading && renderSkeletonRows}
-              {!isLoading && clients.length === 0 && (
+              {!isLoading && drawNumbers.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="text-center text-gray-500 py-8">
+                  <td colSpan={8} className="text-center text-gray-500 py-8">
                     {hasAppliedFilters
-                      ? "Nenhum cliente encontrado com os filtros aplicados."
-                      : "Nenhum cliente cadastrado."}
+                      ? "Nenhum número da sorte encontrado com os filtros aplicados."
+                      : "Nenhum número da sorte cadastrado."}
                   </td>
                 </tr>
               )}
               {!isLoading &&
-                clients.map((client) => (
-                  <tr key={client.id} className="table-row">
-                    <td>{client.id}</td>
-                    <td>{client.name}</td>
-                    <td>{client.cpf}</td>
-                    <td>{client.cel}</td>
+                drawNumbers.map((drawNumber) => (
+                  <tr key={drawNumber.id} className="table-row">
+                    <td>{drawNumber.id}</td>
+                    <td>{drawNumber.number}</td>
+                    <td>{drawNumber.active ? "Sim" : "Não"}</td>
+                    <td>
+                      {drawNumber.winnerAt
+                        ? new Date(drawNumber.winnerAt).toLocaleString()
+                        : "N/A"}
+                    </td>
+                    <td>{drawNumber.invoiceId}</td>
+                    <td>{drawNumber.fiscalCode || "N/A"}</td>
+                    <td>{drawNumber.clientName || "N/A"}</td>
                     <td className="flex items-center justify-center space-x-2">
                       {/* Botões de Ação */}
                       <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() =>
-                          navigate(`/notas-fiscais?client_id=${client.id}`)
-                        }
-                        title="Notas Fiscais"
-                      >
-                        <FileText className="w-4 h-4" />
-                      </button>
-                      <button
                         className="btn btn-primary btn-sm"
-                        onClick={() => navigate(`/clients/${client.id}`)}
+                        onClick={() =>
+                          navigate(`/draw-numbers/${drawNumber.id}`)
+                        }
                         title="Ver Detalhes"
                       >
                         <Eye className="w-4 h-4" />
                       </button>
+                      {/** 
                       <button
                         className="btn btn-success btn-sm"
-                        onClick={() => navigate(`/clients/${client.id}/edit`)}
+                        onClick={() =>
+                          navigate(`/draw-numbers/${drawNumber.id}/edit`)
+                        }
                         title="Atualizar"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
+                      */}
                       <button
                         className="btn btn-danger btn-sm"
-                        onClick={() => setDeletingClient(client.id)}
+                        onClick={() => setDeletingDrawNumberId(drawNumber.id)}
                         title="Deletar"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -415,7 +393,7 @@ export default function ClientListPage() {
             Mostrando{" "}
             {Math.min(totalEntities, (currentPage - 1) * pagination.limit + 1)}{" "}
             - {Math.min(totalEntities, currentPage * pagination.limit)} de{" "}
-            {totalEntities} clientes
+            {totalEntities} números da sorte
           </div>
           <div className="flex items-center space-x-4">
             {/* Seleção de Limite por Página */}
@@ -466,7 +444,7 @@ export default function ClientListPage() {
       )}
 
       {/* Modal para Confirmar Exclusão */}
-      {deletingClient && (
+      {deletingDrawNumberId && (
         <div className="modal-overlay">
           <div className="modal-content">
             <div className="modal-header">
@@ -474,15 +452,15 @@ export default function ClientListPage() {
             </div>
             <div className="modal-body">
               <p className="text-sm text-gray-600">
-                Tem certeza que deseja excluir o cliente de ID{" "}
-                <strong>{deletingClient}</strong>? Essa ação não pode ser
+                Tem certeza que deseja excluir o número da sorte de ID{" "}
+                <strong>{deletingDrawNumberId}</strong>? Essa ação não pode ser
                 desfeita!
               </p>
             </div>
             <div className="modal-footer">
               <button
                 className="btn btn-secondary"
-                onClick={() => setDeletingClient(null)}
+                onClick={() => setDeletingDrawNumberId(null)}
                 disabled={isLoading}
               >
                 Cancelar
@@ -503,9 +481,9 @@ export default function ClientListPage() {
         onClose={() => setIsExportModalOpen(false)}
         onExport={handleExport}
         isLoading={isLoading}
-        title="Exportar Clientes"
+        title="Exportar Números da Sorte"
         currentFilters={appliedFilters} // Passa os filtros atuais
-        entityName="clientes"
+        entityName="números da sorte"
       />
     </div>
   );
