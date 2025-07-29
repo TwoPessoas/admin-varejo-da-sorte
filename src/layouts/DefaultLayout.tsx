@@ -58,7 +58,7 @@ const DefaultLayout = () => {
     },
     {
       name: "Conteúdo de Página",
-      path: "/conteudo-pagina",
+      path: "/pages-content",
       icon: <FileCode className="w-5 h-5" />,
     },
   ];

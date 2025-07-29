@@ -13,18 +13,19 @@ import ClientCreatePage from "../pages/clients/ClientCreatePage";
 import ClientUpdatePage from "../pages/clients/ClientUpdatePage";
 import DrawNumberListPage from "../pages/drawNumber/DrawNumberListPage";
 import DrawNumberDetailPage from "../pages/drawNumber/DrawNumberDetailPage";
-import DrawNumberCreatePage from "../pages/drawNumber/DrawNumberCreatePage";
-import DrawNumberUpdatePage from "../pages/drawNumber/DrawNumberUpdatePage";
-import GameOpportunityListPage from "../pages/GameOpportunity/GameOpportunityListPage";
-import GameOpportunityDetailPage from "../pages/GameOpportunity/GameOpportunityDetailPage";
+import GameOpportunityListPage from "../pages/gameOpportunity/GameOpportunityListPage";
+import GameOpportunityDetailPage from "../pages/gameOpportunity/GameOpportunityDetailPage";
 import InvoiceListPage from "../pages/invoices/InvoiceListPage";
 import InvoiceDetailPage from "../pages/invoices/InvoiceDetailPage";
 import InvoiceCreatePage from "../pages/invoices/InvoiceCreatePage";
-import InvoiceUpdatePage from "../pages/invoices/InvoiceUpdatePage";
 import VoucherListPage from "../pages/vouchers/VoucherListPage";
 import VoucherDetailPage from "../pages/vouchers/VoucherDetailPage";
 import VoucherCreatePage from "../pages/vouchers/VoucherCreatePage";
 import VoucherUpdatePage from "../pages/vouchers/VoucherUpdatePage";
+import PageContentListPage from "../pages/pagesContent/PageContentListPage";
+import PageContentDetailPage from "../pages/pagesContent/PageContentDetailPage";
+import PageContentCreatePage from "../pages/pagesContent/PageContentCreatePage";
+import PageContentUpdatePage from "../pages/pagesContent/PageContentUpdatePage";
 
 const router = createBrowserRouter([
   {
@@ -116,6 +117,24 @@ const router = createBrowserRouter([
           {
             path: "/vouchers/:id/edit",
             element: <VoucherUpdatePage />,
+          },
+
+          /* Vouchers */
+          {
+            path: "/pages-content",
+            element: <PageContentListPage />,
+          },
+          {
+            path: "/pages-content/:id",
+            element: <PageContentDetailPage />,
+          },
+          {
+            path: "/pages-content/new",
+            element: <PageContentCreatePage />,
+          },
+          {
+            path: "/pages-content/:id/edit",
+            element: <PageContentUpdatePage />,
           },
 
           /* Products */
