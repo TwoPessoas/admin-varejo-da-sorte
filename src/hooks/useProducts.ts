@@ -1,81 +1,261 @@
-import { useState, useEffect, useCallback } from 'react';
-import api from '../services/api';
+// src/hooks/useProduct.ts
+import { useState } from "react";
+import api from "../services/api"; // Certifique-se de que o caminho para o seu axios instance está correto
+import ObjectUtils from "../utils/ObjectUtils"; // Assumindo que ObjectUtils.ts está em ../utils
+import toast from "react-hot-toast"; // Para notificações de sucesso/erro
+import type {
+  ExportProductsParams,
+  FetchProductsParams,
+  PaginatedProductResponse,
+  Product,
+  UseProduct,
+} from "../types/Product";
 
-// 1. Defina a interface para o tipo Produto (baseado no seu backend)
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  stock: number;
-  created_at: string;
-}
-
-// 2. Defina a interface para a resposta da API (com paginação)
-interface ApiResponse {
-  data: Product[];
-  meta: {
-    total: number;
-    page: number;
-    last_page: number;
-  };
-}
-
-export const useProducts = () => {
-  // Estados para dados, carregamento e erros
+export default function useProduct(): UseProduct {
   const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [totalEntities, setTotalEntities] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Estados para paginação e filtro
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // 3. Função para buscar os dados, agora usando useCallback
-  const fetchProducts = useCallback(async () => {
+  /**
+   * Busca a lista de produtos com opções de paginação e filtro.
+   * Os campos pesquisáveis na API são 'ean', 'description' e 'brand'.
+   */
+  const fetchProducts = async (params?: FetchProductsParams): Promise<void> => {
     setIsLoading(true);
     setError(null);
+
     try {
-      // Constrói os parâmetros da query para a API
-      const params = new URLSearchParams({
-        page: String(page),
-        limit: '10', // Itens por página
-        search: searchTerm,
+      // Cria um objeto de parâmetros para enviar à API,
+      // incluindo apenas os campos que possuem valor definido para a busca.
+      const searchParams: { [key: string]: any } = {
+        ean: params?.ean,
+        description: params?.description,
+        brand: params?.brand,
+      };
+      // Remove parâmetros nulos/indefinidos do objeto de busca
+      ObjectUtils.removeParamsNuable(searchParams);
+
+      // Constrói os parâmetros gerais da API, incluindo paginação e ordenação.
+      const apiParams: { [key: string]: any } = {
+        page: params?.page,
+        limit: params?.limit,
+        orderBy: params?.orderBy,
+        orderDirection: params?.orderDirection,
+      };
+
+      // Se houver filtros de busca, stringify para o parâmetro 'search'
+      if (Object.keys(searchParams).length > 0) {
+        apiParams.search = JSON.stringify(searchParams);
+      }
+      // Remove parâmetros nulos/indefinidos dos parâmetros da API
+      ObjectUtils.removeParamsNuable(apiParams);
+
+      const response = await api.get<PaginatedProductResponse>("/products", {
+        params: apiParams,
       });
 
-      const response = await api.get<ApiResponse>(`/products?${params.toString()}`);
-      
       setProducts(response.data.data);
-      setTotalPages(response.data.meta.last_page);
-
-    } catch (err) {
-      setError('Não foi possível carregar os produtos.');
-      console.error(err);
+      setTotalEntities(response.data.pagination.totalEntities);
+      setCurrentPage(response.data.pagination.currentPage);
+      setTotalPages(response.data.pagination.totalPages);
+    } catch (err: any) {
+      console.error("Failed to fetch products:", err);
+      const errorMessage =
+        "Falha ao buscar produtos. Por favor, tente novamente.";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [page, searchTerm]);
+  };
 
-  // 4. useEffect para chamar a busca quando a página ou o filtro mudarem
-  useEffect(() => {
-    // Usamos um debounce para o filtro de busca para não sobrecarregar a API
-    const debounceTimer = setTimeout(() => {
-      fetchProducts();
-    }, 500); // Aguarda 500ms após o usuário parar de digitar
+  /**
+   * Cria um novo produto.
+   */
+  const createProduct = async (
+    productData: Partial<Product>
+  ): Promise<Product | null> => {
+    setIsLoading(true);
+    setError(null);
 
-    return () => clearTimeout(debounceTimer); // Limpa o timer
-  }, [fetchProducts]);
+    try {
+      const response = await api.post<Product>("/products", productData);
+      toast.success("Produto criado com sucesso!");
+      return response.data;
+    } catch (err: any) {
+      console.error("Failed to create product:", err);
+      const errorMessage =
+        "Falha ao criar produto. Por favor, verifique os dados.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // 5. Retorna tudo que o componente de UI vai precisar
+  /**
+   * Busca um produto específico por ID.
+   */
+  const getProduct = async (id: number): Promise<Product | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.get<Product>(`/products/${id}`);
+      return response.data;
+    } catch (err: any) {
+      console.error("Failed to fetch product:", err);
+      setError("Falha ao buscar dados do produto. Por favor, tente novamente.");
+      toast.error("Falha ao buscar dados do produto.");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Atualiza as informações de um produto existente.
+   */
+  const updateProduct = async (
+    id: number,
+    productData: Partial<Product>
+  ): Promise<Product | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.put<Product>(`/products/${id}`, productData);
+      toast.success("Produto atualizado com sucesso!");
+      return response.data;
+    } catch (err: any) {
+      console.error("Failed to update product:", err);
+      const errorMessage =
+        "Falha ao atualizar produto. Por favor, tente novamente.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Exclui um produto por ID.
+   */
+  const deleteProduct = async (id: number): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await api.delete(`/products/${id}`);
+      toast.success("Produto excluído com sucesso!");
+      return true;
+    } catch (err: any) {
+      console.error("Failed to delete product:", err);
+      const errorMessage =
+        "Falha ao excluir produto. Por favor, tente novamente.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Exporta a lista de produtos com base nos filtros fornecidos.
+   */
+  const exportProducts = async (
+    params?: ExportProductsParams
+  ): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const searchParams: { [key: string]: any } = {
+        ean: params?.ean,
+        description: params?.description,
+        brand: params?.brand,
+      };
+      // Remove propriedades vazias
+      ObjectUtils.removeParamsNuable(searchParams);
+
+      // Constrói os parâmetros para a API, incluindo filtros de data e formato.
+      const apiParams: { [key: string]: any } = {
+        startDate: params?.startDate,
+        endDate: params?.endDate,
+        format: params?.format || "csv", // Padrão CSV se não especificado
+      };
+
+      // Se houver filtros de busca, stringify para o parâmetro 'search'
+      if (Object.keys(searchParams).length > 0) {
+        apiParams.search = JSON.stringify(searchParams);
+      }
+      // Remove propriedades vazias dos parâmetros finais da API
+      ObjectUtils.removeParamsNuable(apiParams);
+
+      // Faz a requisição para exportação, esperando um blob (arquivo) como resposta.
+      const response = await api.get("/products/export", {
+        params: apiParams,
+        responseType: "blob", // Importante para download de arquivos
+      });
+
+      // Cria um Blob a partir da resposta e define o tipo de conteúdo.
+      const blob = new Blob([response.data], {
+        type: response.headers["content-type"] || "application/octet-stream",
+      });
+
+      // Tenta extrair o nome do arquivo do header 'Content-Disposition' ou define um padrão.
+      const contentDisposition = response.headers["content-disposition"];
+      let filename = `produtos_export.${apiParams.format}`;
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="(.+)"/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+
+      // Cria um link temporário para download no navegador.
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename; // Nome do arquivo para download
+      document.body.appendChild(link);
+      link.click(); // Simula o clique no link para iniciar o download
+
+      // Limpa o link temporário e revoga a URL do objeto.
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Exportação realizada com sucesso!");
+      return true;
+    } catch (err: any) {
+      console.error("Failed to export products:", err);
+      const errorMessage = "Falha na exportação. Por favor, tente novamente.";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     products,
+    totalEntities,
+    currentPage,
+    totalPages,
     isLoading,
     error,
-    page,
-    totalPages,
-    searchTerm,
-    setPage,
-    setSearchTerm,
+    fetchProducts,
+    createProduct,
+    getProduct,
+    updateProduct,
+    deleteProduct,
+    exportProducts,
   };
-};
+}

@@ -11,22 +11,7 @@ import {
 } from "lucide-react"; // Adicionado Award para MegaWinner
 import useClient from "../../hooks/useClient";
 import DateUtils from "../../utils/DateUtils";
-
-// Definindo a interface Client, caso não esteja disponível globalmente
-// Ou importe do seu arquivo de tipos se existir (e.g., src/types/Client.ts)
-interface Client {
-  id: number;
-  isPreRegister: boolean;
-  name: string;
-  cpf: string;
-  birthday: string | null;
-  cel: string | null;
-  email: string | null;
-  isMegaWinner: boolean;
-  emailSendedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
+import type { Client } from "../../types/Client";
 
 export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
