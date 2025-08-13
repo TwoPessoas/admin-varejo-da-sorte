@@ -7,8 +7,6 @@ import ClientForm from "./components/ClientForm";
 export default function ClientCreate() {
   const { createClient, isLoading } = useClient();
   const navigate = useNavigate();
-  // Não precisamos mais de 'formError' no estado local se usarmos toast.error
-  // const [formError, setFormError] = useState<string | null>(null);
 
   // Lidar com o envio do formulário
   const handleCreate = async (data: any) => {
@@ -48,14 +46,6 @@ export default function ClientCreate() {
         </button>
         <h1 className="page-title">Novo Cliente</h1>
       </div>
-
-      {/* Não precisamos mais deste bloco de erro explícito se usarmos toast.error */}
-      {/* {formError && (
-        <div className="alert alert-error flex items-center">
-          <XCircle className="w-5 h-5 mr-2 flex-shrink-0" />
-          <p>{formError}</p>
-        </div>
-      )} */}
 
       {/* Formulário Reutilizável */}
       <ClientForm onSubmit={handleCreate} isLoading={isLoading} />

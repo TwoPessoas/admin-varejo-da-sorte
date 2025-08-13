@@ -3,11 +3,8 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import useGameOpportunity from "../../hooks/useGameOpportunity"; // Ajuste o caminho conforme sua estrutura de pastas
 import { useNavigate } from "react-router-dom";
 import {
-  Edit,
   Eye,
   Trash2,
-  FileText, // Ícone para "Ver Fatura"
-  Plus,
   Download,
   XCircle,
   Search,

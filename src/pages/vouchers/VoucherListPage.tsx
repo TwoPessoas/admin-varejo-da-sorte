@@ -13,7 +13,6 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
-  CalendarDays, // Adicionado para indicar filtro de data
 } from "lucide-react";
 import useVoucher from "../../hooks/useVoucher";
 import ExportModal from "../../components/ExportModal";

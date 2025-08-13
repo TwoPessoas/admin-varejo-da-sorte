@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 
 // Importar ícones do lucide-react
 import {
-  Edit,
   Eye,
   Trash2,
   Download,
@@ -14,7 +13,6 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
-  FileText, // Usado para "Ver Fatura"
 } from "lucide-react";
 import useDrawNumber from "../../hooks/useDrawNumber";
 import ExportModal from "../../components/ExportModal";

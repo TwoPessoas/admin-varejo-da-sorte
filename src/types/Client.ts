@@ -64,3 +64,14 @@ export interface ExportClientsParams {
   // Formato de exportação (futuro)
   format?: "csv" | "xlsx" | "pdf";
 }
+
+export interface ClientTO {
+  isPreRegister: boolean;
+  name: string;
+  cpf: string;
+  birthday: string | null;
+  cel: string | null;
+  email: string | null;
+  isMegaWinner: boolean;
+  emailSendedAt: string | null;
+}

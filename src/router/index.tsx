@@ -6,7 +6,6 @@ import ProtectedRoute from "../contexts/ProtectedRoute";
 
 import LoginPage from "../pages/login/Login";
 import DashboardPage from "../pages/Dashboard";
-import ProductListPage from "../pages/products/List";
 import ClientListPage from "../pages/clients/ClientListPage";
 import ClientDetailPage from "../pages/clients/ClientDetailPage";
 import ClientCreatePage from "../pages/clients/ClientCreatePage";
@@ -26,6 +25,7 @@ import PageContentListPage from "../pages/pagesContent/PageContentListPage";
 import PageContentDetailPage from "../pages/pagesContent/PageContentDetailPage";
 import PageContentCreatePage from "../pages/pagesContent/PageContentCreatePage";
 import PageContentUpdatePage from "../pages/pagesContent/PageContentUpdatePage";
+import ProductListPage from "../pages/products/ProductListPage";
 
 const router = createBrowserRouter([
   {

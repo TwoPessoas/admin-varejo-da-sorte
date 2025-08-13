@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext'; // Importa o AuthContext p
 
 // Schema de validação com Zod
 const loginSchema = z.object({
-  email: z.string().email('E-mail inválido').nonempty('E-mail é obrigatório'),
+  email: z.email('E-mail inválido').nonempty('E-mail é obrigatório'),
   password: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres').nonempty('Senha é obrigatória'),
 });
 
