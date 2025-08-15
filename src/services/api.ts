@@ -1,6 +1,8 @@
 import axios from 'axios';
+import { AUTH_TOKEN_NAME_STORE } from '../contexts/AuthContext';
 
 const api = axios.create({
+  //baseURL: 'https://api.leonardopessoa.com.br/api', 
   baseURL: 'http://localhost:8080/api',
 });
 
@@ -8,7 +10,8 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Pega o token do localStorage
-    const token = localStorage.getItem('authTokenVeraoDaSorte');
+    const token = localStorage.getItem(AUTH_TOKEN_NAME_STORE);
+    console.log('[token recuperado] token', token);
 
     // Se o token existir, adiciona ao cabeçalho de autorização
     if (token) {

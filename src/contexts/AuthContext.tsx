@@ -26,10 +26,11 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AUTH_TOKEN_NAME_STORE = 'authTokenVeraoDaSorte';
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Vamos inicializar o token a partir do localStorage para persistir o login
-    const [token, setToken] = useState<string | null>(localStorage.getItem('authTokenVeraoDaSorte'));
+    const [token, setToken] = useState<string | null>(localStorage.getItem(AUTH_TOKEN_NAME_STORE));
     const navigate = useNavigate();
 
     // 3. Reescreva completamente a função de login
@@ -43,7 +44,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (newToken) {
                 setToken(newToken);
-                localStorage.setItem('authTokenVeraoDaSorte', newToken);
+                localStorage.setItem(AUTH_TOKEN_NAME_STORE, newToken);
                 navigate('/dashboard'); // Redireciona para o dashboard após o login
                 return { success: true };
             }
@@ -71,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = () => {
         setToken(null);
-        localStorage.removeItem('authTokenVeraoDaSorte');
+        localStorage.removeItem(AUTH_TOKEN_NAME_STORE);
         navigate('/login');
     };
 
