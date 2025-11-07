@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  Mail,
 } from "lucide-react";
 import useVoucher from "../../hooks/useVoucher";
 import ExportModal from "../../components/ExportModal";
@@ -28,6 +29,7 @@ export default function VoucherListPage() {
     totalEntities,
     currentPage,
     totalPages,
+    sendVoucherWinnerEmail,
   } = useVoucher(); // Usa o hook useVoucher
 
   const navigate = useNavigate();
@@ -218,12 +220,21 @@ export default function VoucherListPage() {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
       });
     } catch (e) {
       console.error("Erro ao formatar data:", dateString, e);
       return dateString; // Retorna original se houver erro
     }
   };
+
+  const handlerSendVoucherWinnerEmail = useCallback(
+    async (id: number) => {
+      await sendVoucherWinnerEmail(id);
+    },
+    [sendVoucherWinnerEmail]
+  );
 
   return (
     <div className="space-y-8 p-4 lg:p-6">
@@ -336,7 +347,7 @@ export default function VoucherListPage() {
                 <th className="w-10">ID</th>
                 <th>Cupom</th>
                 <th>Data Sorteio</th>
-                <th>Valor Voucher</th>
+                <th>Ganhador</th>
                 <th className="text-center">Ações</th>
               </tr>
             </thead>
@@ -358,13 +369,24 @@ export default function VoucherListPage() {
                     <td>{voucher.coupom}</td>
                     <td>{formatDate(voucher.drawDate)}</td>
                     <td>
-                      {voucher.voucherValue !== null
-                        ? `R\$ ${voucher.voucherValue}`
+                      {voucher.clientName !== null
+                        ? voucher.clientName
                         : "-"}
                     </td>
                     <td className="flex items-center justify-center space-x-2">
                       {/* Botões de Ação */}
-                      {/* Não há um "notas fiscais" para voucher, então removeremos ou adaptaremos */}
+                      {voucher.gameOpportunityId != null && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() =>
+                            handlerSendVoucherWinnerEmail(voucher.id)
+                          }
+                          title="E-mail Vencedor Voucher"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </button>
+                      )}
+
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() => navigate(`/vouchers/${voucher.id}`)}

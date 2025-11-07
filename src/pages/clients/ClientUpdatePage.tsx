@@ -12,6 +12,7 @@ interface ClientFormValues {
   cel?: string;
   email?: string;
   isPreRegister: boolean;
+  isMegaWinner: boolean;
 }
 
 export default function ClientUpdatePage() {
@@ -52,6 +53,7 @@ export default function ClientUpdatePage() {
             cel: client.cel ? client.cel : undefined,
             email: client.email ? client.email : undefined,
             isPreRegister: client.isPreRegister,
+            isMegaWinner: client.isMegaWinner,
           });
         } else {
           setFetchClientError(

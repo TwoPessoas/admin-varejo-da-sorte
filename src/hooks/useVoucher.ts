@@ -17,6 +17,7 @@ interface Voucher {
   emailSendedAt: string | null; // Mapeia 'email_sended_at'
   createdAt: string; // Mapeia 'created_at'
   updatedAt: string; // Mapeia 'updated_at'
+  clientName: string;
 }
 
 /**
@@ -85,6 +86,7 @@ interface UseVoucher {
   ) => Promise<Voucher | null>;
   deleteVoucher: (id: number) => Promise<boolean>;
   exportVouchers: (params?: ExportVouchersParams) => Promise<boolean>;
+  sendVoucherWinnerEmail: (id: number) => Promise<boolean>;
 }
 
 /**
@@ -356,6 +358,25 @@ export default function useVoucher(): UseVoucher {
     }
   };
 
+  const sendVoucherWinnerEmail = async (id: number): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await api.get(`/vouchers/send-voucher-winner-email/${id}`);
+      toast.success("E-mail enviado com sucesso!");
+      return true;
+    } catch (err: any) {
+      const errorMessage = err.response.data.message;
+      console.log('[err]', errorMessage);
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Retorna as variáveis de estado e as funções do hook.
   return {
     vouchers,
@@ -370,5 +391,6 @@ export default function useVoucher(): UseVoucher {
     updateVoucher,
     deleteVoucher,
     exportVouchers,
+    sendVoucherWinnerEmail
   };
 }

@@ -14,6 +14,7 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  Crown,
 } from "lucide-react";
 import ExportModal from "../../components/ExportModal";
 
@@ -28,6 +29,7 @@ export default function ClientListPage() {
     totalEntities,
     currentPage,
     totalPages,
+    sendMegaWinnerEmail,
   } = useClient();
   console.log("clients", {
     clients,
@@ -184,6 +186,13 @@ export default function ClientListPage() {
     [exportClients, appliedFilters]
   );
 
+  const handlerSendMegaWinnerEmail = useCallback(
+    async (clientId: number) => {
+      await sendMegaWinnerEmail(clientId);
+    },
+    [sendMegaWinnerEmail]
+  );
+
   // Verifica se há filtros aplicados para mostrar indicador visual
   const hasAppliedFilters = useMemo(() => {
     return Object.values(appliedFilters).some((value) => value.trim() !== "");
@@ -279,7 +288,7 @@ export default function ClientListPage() {
             name="name"
             value={filterInputs.name}
             onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
+            onKeyDown={handleFilterKeyPress}
           />
           <input
             type="text"
@@ -288,7 +297,7 @@ export default function ClientListPage() {
             name="cpf"
             value={filterInputs.cpf}
             onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
+            onKeyDown={handleFilterKeyPress}
           />
           <input
             type="text"
@@ -297,7 +306,7 @@ export default function ClientListPage() {
             name="cel"
             value={filterInputs.cel}
             onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
+            onKeyDown={handleFilterKeyPress}
           />
         </div>
         <div className="card-footer flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -380,6 +389,16 @@ export default function ClientListPage() {
                       >
                         <FileText className="w-4 h-4" />
                       </button>
+                      {/* Email Mega Vencedor */}
+                      {client.isMegaWinner && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handlerSendMegaWinnerEmail(client.id)}
+                          title="E-mail Mega Vencedor"
+                        >
+                          <Crown className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() => navigate(`/clients/${client.id}`)}

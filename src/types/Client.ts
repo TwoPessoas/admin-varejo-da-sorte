@@ -52,6 +52,7 @@ export interface UseClient {
   ) => Promise<Client | null>;
   deleteClient: (id: number) => Promise<boolean>;
   exportClients: (params?: ExportClientsParams) => Promise<boolean>;
+  sendMegaWinnerEmail: (id: number) => Promise<boolean>;
 }
 
 export interface ExportClientsParams {

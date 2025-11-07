@@ -18,6 +18,7 @@ const clientSchema = z.object({
   cel: z.string().optional(),
   email: z.email("E-mail inválido").optional(),
   isPreRegister: z.boolean(),
+  isMegaWinner: z.boolean(),
 });
 
 type ClientFormValues = z.infer<typeof clientSchema>;
@@ -169,6 +170,26 @@ export default function ClientForm({
             </div>
           </div>
         </fieldset>
+        {/* Checkbox Ganhador Mega Prémio */}
+        <div className="form-group">
+          <label
+            htmlFor="isMegaWinner"
+            className="inline-flex items-center cursor-pointer"
+          >
+            <input
+              {...register("isMegaWinner")}
+              type="checkbox"
+              id="isMegaWinner"
+              className="form-checkbox"
+            />
+            <span className="ml-2 text-sm text-gray-700">
+              Ganhador do mega prémio
+            </span>
+          </label>
+          <p className="form-help">
+            Marque esta opção se o cliente for o ganhador do mega prémio.
+          </p>
+        </div>
 
         {/* Checkbox Pré-Cadastro */}
         <div className="form-group">
