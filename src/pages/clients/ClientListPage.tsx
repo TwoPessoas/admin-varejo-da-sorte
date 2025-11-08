@@ -29,7 +29,6 @@ export default function ClientListPage() {
     totalEntities,
     currentPage,
     totalPages,
-    sendMegaWinnerEmail,
   } = useClient();
   console.log("clients", {
     clients,
@@ -184,13 +183,6 @@ export default function ClientListPage() {
       return await exportClients(combinedParams);
     },
     [exportClients, appliedFilters]
-  );
-
-  const handlerSendMegaWinnerEmail = useCallback(
-    async (clientId: number) => {
-      await sendMegaWinnerEmail(clientId);
-    },
-    [sendMegaWinnerEmail]
   );
 
   // Verifica se há filtros aplicados para mostrar indicador visual
@@ -389,16 +381,6 @@ export default function ClientListPage() {
                       >
                         <FileText className="w-4 h-4" />
                       </button>
-                      {/* Email Mega Vencedor */}
-                      {client.isMegaWinner && (
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => handlerSendMegaWinnerEmail(client.id)}
-                          title="E-mail Mega Vencedor"
-                        >
-                          <Crown className="w-4 h-4" />
-                        </button>
-                      )}
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() => navigate(`/clients/${client.id}`)}

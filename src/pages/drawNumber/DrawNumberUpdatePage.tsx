@@ -11,7 +11,6 @@ interface DrawNumberFormValues {
   invoiceId: number;
   active?: boolean;
   winnerAt?: string | null;
-  emailSendedAt?: string | null;
 }
 
 export default function DrawNumberUpdatePage() {
@@ -56,7 +55,6 @@ export default function DrawNumberUpdatePage() {
             invoiceId: drawNumber.invoiceId,
             active: drawNumber.active,
             winnerAt: drawNumber.winnerAt,
-            emailSendedAt: drawNumber.emailSendedAt,
           });
         } else {
           setFetchDrawNumberError(
@@ -74,7 +72,7 @@ export default function DrawNumberUpdatePage() {
     };
 
     fetchCurrentDrawNumber();
-  }, [id, getDrawNumber]); // Adiciona getDrawNumber nas dependências
+  }, [id]); // Adiciona getDrawNumber nas dependências
 
   // Lidar com a submissão do formulário de atualização
   const handleUpdate = useCallback(

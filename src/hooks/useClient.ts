@@ -218,24 +218,6 @@ export default function useClient(): UseClient {
     }
   };
 
-  const sendMegaWinnerEmail = async (id: number): Promise<boolean> => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      await api.get(`/clients/send-mega-winner-email/${id}`);
-      toast.success("E-mail enviado com sucesso!");
-      return true;
-    } catch (err: any) {
-      const errorMessage = err.message;
-      setError(errorMessage);
-      toast.error(errorMessage);
-      return false;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return {
     clients,
     totalEntities,
@@ -248,7 +230,6 @@ export default function useClient(): UseClient {
     getClient,
     updateClient,
     deleteClient,
-    exportClients,
-    sendMegaWinnerEmail,
+    exportClients
   };
 }

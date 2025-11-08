@@ -13,6 +13,8 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
+  Edit,
+  Mail,
 } from "lucide-react";
 import useDrawNumber from "../../hooks/useDrawNumber";
 import ExportModal from "../../components/ExportModal";
@@ -28,6 +30,7 @@ export default function DrawNumberListPage() {
     totalEntities,
     currentPage,
     totalPages,
+    sendMegaWinnerEmail,
   } = useDrawNumber();
 
   const navigate = useNavigate();
@@ -205,6 +208,13 @@ export default function DrawNumberListPage() {
     ));
   }, [isLoading, pagination.limit]);
 
+  const handlerSendMegaWinnerEmail = useCallback(
+    async (clientId: number) => {
+      await sendMegaWinnerEmail(clientId);
+    },
+    [sendMegaWinnerEmail]
+  );
+
   return (
     <div className="space-y-8 p-4 lg:p-6">
       {/* Cabeçalho da Página */}
@@ -257,7 +267,7 @@ export default function DrawNumberListPage() {
             name="invoiceId"
             value={filterInputs.invoiceId}
             onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
+            onKeyDown={handleFilterKeyPress}
           />
           <input
             type="text"
@@ -266,7 +276,7 @@ export default function DrawNumberListPage() {
             name="number"
             value={filterInputs.number}
             onChange={handleFilterInputChange}
-            onKeyPress={handleFilterKeyPress}
+            onKeyDown={handleFilterKeyPress}
           />
         </div>
         <div className="card-footer flex flex-col sm:flex-row justify-between items-center space-y-2 sm:space-y-0 sm:space-x-4">
@@ -315,9 +325,7 @@ export default function DrawNumberListPage() {
               <tr>
                 <th className="w-10">ID</th>
                 <th>Número da Sorte</th>
-                <th>Ativo</th>
                 <th>Ganhador Em</th>
-                <th>ID Fatura</th>
                 <th>Cód. Fiscal Fatura</th>
                 <th>Nome Cliente</th>
                 <th className="text-center">Ações</th>
@@ -339,17 +347,27 @@ export default function DrawNumberListPage() {
                   <tr key={drawNumber.id} className="table-row">
                     <td>{drawNumber.id}</td>
                     <td>{drawNumber.number}</td>
-                    <td>{drawNumber.active ? "Sim" : "Não"}</td>
                     <td>
                       {drawNumber.winnerAt
                         ? new Date(drawNumber.winnerAt).toLocaleString()
                         : "N/A"}
                     </td>
-                    <td>{drawNumber.invoiceId}</td>
                     <td>{drawNumber.fiscalCode || "N/A"}</td>
                     <td>{drawNumber.clientName || "N/A"}</td>
                     <td className="flex items-center justify-center space-x-2">
                       {/* Botões de Ação */}
+                      {/* Email Mega Vencedor */}
+                      {drawNumber.winnerAt && (
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() =>
+                            handlerSendMegaWinnerEmail(drawNumber.id)
+                          }
+                          title="E-mail Mega Vencedor"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </button>
+                      )}
                       <button
                         className="btn btn-primary btn-sm"
                         onClick={() =>
@@ -359,7 +377,6 @@ export default function DrawNumberListPage() {
                       >
                         <Eye className="w-4 h-4" />
                       </button>
-                      {/** 
                       <button
                         className="btn btn-success btn-sm"
                         onClick={() =>
@@ -369,7 +386,6 @@ export default function DrawNumberListPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
-                      */}
                       <button
                         className="btn btn-danger btn-sm"
                         onClick={() => setDeletingDrawNumberId(drawNumber.id)}

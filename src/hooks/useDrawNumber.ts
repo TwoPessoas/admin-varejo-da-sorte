@@ -69,6 +69,7 @@ interface UseDrawNumber {
   ) => Promise<DrawNumber | null>;
   deleteDrawNumber: (id: number) => Promise<boolean>;
   exportDrawNumbers: (params?: ExportDrawNumbersParams) => Promise<boolean>;
+  sendMegaWinnerEmail: (id: number) => Promise<boolean>;
 }
 
 export default function useDrawNumber(): UseDrawNumber {
@@ -283,6 +284,24 @@ export default function useDrawNumber(): UseDrawNumber {
     }
   };
 
+  const sendMegaWinnerEmail = async (id: number): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await api.get(`/draw-numbers/send-winner-email/${id}`);
+      toast.success("E-mail enviado com sucesso!");
+      return true;
+    } catch (err: any) {
+      const errorMessage = err.message;
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
     drawNumbers,
     totalEntities,
@@ -296,5 +315,6 @@ export default function useDrawNumber(): UseDrawNumber {
     updateDrawNumber,
     deleteDrawNumber,
     exportDrawNumbers,
+    sendMegaWinnerEmail,
   };
 }

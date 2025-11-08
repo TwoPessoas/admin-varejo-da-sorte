@@ -26,6 +26,7 @@ import PageContentDetailPage from "../pages/pagesContent/PageContentDetailPage";
 import PageContentCreatePage from "../pages/pagesContent/PageContentCreatePage";
 import PageContentUpdatePage from "../pages/pagesContent/PageContentUpdatePage";
 import ProductListPage from "../pages/products/ProductListPage";
+import DrawNumberUpdatePage from "../pages/drawNumber/DrawNumberUpdatePage";
 
 const router = createBrowserRouter([
   {
@@ -75,6 +76,10 @@ const router = createBrowserRouter([
           {
             path: "/draw-numbers/:id",
             element: <DrawNumberDetailPage />,
+          },
+          {
+            path: "/draw-numbers/:id/edit",
+            element: <DrawNumberUpdatePage />,
           },
 
           /* Opportunities */

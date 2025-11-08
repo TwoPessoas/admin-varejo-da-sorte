@@ -25,7 +25,6 @@ const drawNumberSchema = z.object({
   // 'winnerAt' e 'emailSendedAt' são opcionais e podem ser nulos/vazios
   // Serão tratados como strings no formulário e convertidos para/de ISO na submissão
   winnerAt: z.string().optional().nullable(),
-  emailSendedAt: z.string().optional().nullable(),
 });
 
 // Tipo derivado do esquema Zod para os valores do formulário
@@ -47,9 +46,6 @@ export default function DrawNumberForm({
   const processedInitialValues = {
     ...initialValues,
     winnerAt: DateTimeConverter.toInputDateTime(initialValues.winnerAt),
-    emailSendedAt: DateTimeConverter.toInputDateTime(
-      initialValues.emailSendedAt
-    ),
   };
 
   const {
@@ -66,7 +62,6 @@ export default function DrawNumberForm({
     const dataToSend = {
       ...data,
       winnerAt: DateTimeConverter.toISOString(data.winnerAt),
-      emailSendedAt: DateTimeConverter.toISOString(data.emailSendedAt),
     };
     await onSubmit(dataToSend);
   };
@@ -152,27 +147,6 @@ export default function DrawNumberForm({
               {errors.winnerAt && (
                 <p className="form-error flex items-center">
                   <XCircle className="w-4 h-4 mr-1" /> {errors.winnerAt.message}
-                </p>
-              )}
-            </div>
-
-            {/* Email Sended At */}
-            <div className="form-group">
-              <label htmlFor="emailSendedAt" className="form-label">
-                Email Enviado Em
-              </label>
-              <input
-                {...register("emailSendedAt")}
-                type="datetime-local"
-                id="emailSendedAt"
-                className={`form-input ${
-                  errors.emailSendedAt ? "border-red-300" : ""
-                }`}
-              />
-              {errors.emailSendedAt && (
-                <p className="form-error flex items-center">
-                  <XCircle className="w-4 h-4 mr-1" />{" "}
-                  {errors.emailSendedAt.message}
                 </p>
               )}
             </div>
