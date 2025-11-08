@@ -102,7 +102,7 @@ const DefaultLayout = () => {
         <div className="sidebar-footer">
           <button
             className="nav-item w-full flex items-center text-left space-x-2 text-red-600 hover:text-red-800"
-            onClick={logout}
+            onClick={() => logout()}
           >
             <LogOut className="w-5 h-5" />
             <span className="nav-text">Sair</span>
@@ -132,7 +132,7 @@ const DefaultLayout = () => {
             </button>
             <h1 className="text-lg font-semibold text-gray-900">Dashboard</h1>
             <div>
-              <button className="btn btn-danger btn-sm" onClick={logout}>
+              <button className="btn btn-danger btn-sm" onClick={() => logout()}>
                 Sair
               </button>
             </div>

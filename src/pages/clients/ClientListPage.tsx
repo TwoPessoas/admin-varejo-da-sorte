@@ -14,7 +14,6 @@ import {
   ArrowLeft,
   ArrowRight,
   X,
-  Crown,
 } from "lucide-react";
 import ExportModal from "../../components/ExportModal";
 
