@@ -3,8 +3,8 @@ import toast from 'react-hot-toast';
 import { AUTH_TOKEN_NAME_STORE } from '../contexts/AuthContext';
 
 const api = axios.create({
-  //baseURL: 'https://api.aniversarioatakarejo.com.br/api', 
-  baseURL: 'http://localhost:8080/api',
+  baseURL: 'https://api.fimdeanoatakarejo.com.br/api', 
+  //baseURL: 'http://localhost:8080/api',
 });
 
 // Request interceptor
