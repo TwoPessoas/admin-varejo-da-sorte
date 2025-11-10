@@ -14,6 +14,7 @@ import {
   ArrowRight,
   X,
   Mail,
+  Mails,
 } from "lucide-react";
 import useVoucher from "../../hooks/useVoucher";
 import ExportModal from "../../components/ExportModal";
@@ -30,6 +31,7 @@ export default function VoucherListPage() {
     currentPage,
     totalPages,
     sendVoucherWinnerEmail,
+    sendAdjustmentVoucherWinnerEmail,
   } = useVoucher(); // Usa o hook useVoucher
 
   const navigate = useNavigate();
@@ -221,7 +223,7 @@ export default function VoucherListPage() {
         month: "2-digit",
         year: "numeric",
         hour: "2-digit",
-        minute: "2-digit"
+        minute: "2-digit",
       });
     } catch (e) {
       console.error("Erro ao formatar data:", dateString, e);
@@ -234,6 +236,13 @@ export default function VoucherListPage() {
       await sendVoucherWinnerEmail(id);
     },
     [sendVoucherWinnerEmail]
+  );
+
+  const handlerSendAdjustmentVoucherWinnerEmail = useCallback(
+    async (id: number) => {
+      await sendAdjustmentVoucherWinnerEmail(id);
+    },
+    [sendAdjustmentVoucherWinnerEmail]
   );
 
   return (
@@ -369,22 +378,33 @@ export default function VoucherListPage() {
                     <td>{voucher.coupom}</td>
                     <td>{formatDate(voucher.drawDate)}</td>
                     <td>
-                      {voucher.clientName !== null
-                        ? voucher.clientName
-                        : "-"}
+                      {voucher.clientName !== null ? voucher.clientName : "-"}
                     </td>
                     <td className="flex items-center justify-center space-x-2">
                       {/* Botões de Ação */}
                       {voucher.gameOpportunityId != null && (
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() =>
-                            handlerSendVoucherWinnerEmail(voucher.id)
-                          }
-                          title="E-mail Vencedor Voucher"
-                        >
-                          <Mail className="w-4 h-4" />
-                        </button>
+                        <>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() =>
+                              handlerSendVoucherWinnerEmail(voucher.id)
+                            }
+                            title="E-mail Vencedor Voucher"
+                          >
+                            <Mail className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() =>
+                              handlerSendAdjustmentVoucherWinnerEmail(
+                                voucher.id
+                              )
+                            }
+                            title="E-mail Correção de Voucher"
+                          >
+                            <Mails className="w-4 h-4" />
+                          </button>
+                        </>
                       )}
 
                       <button

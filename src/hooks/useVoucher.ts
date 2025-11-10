@@ -87,6 +87,7 @@ interface UseVoucher {
   deleteVoucher: (id: number) => Promise<boolean>;
   exportVouchers: (params?: ExportVouchersParams) => Promise<boolean>;
   sendVoucherWinnerEmail: (id: number) => Promise<boolean>;
+  sendAdjustmentVoucherWinnerEmail: (id: number) => Promise<boolean>;
 }
 
 /**
@@ -377,6 +378,25 @@ export default function useVoucher(): UseVoucher {
     }
   };
 
+  const sendAdjustmentVoucherWinnerEmail = async (id: number): Promise<boolean> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      await api.get(`/vouchers/send-adjustment-voucher-winner-email/${id}`);
+      toast.success("E-mail enviado com sucesso!");
+      return true;
+    } catch (err: any) {
+      const errorMessage = err.response.data.message;
+      console.log('[err]', errorMessage);
+      setError(errorMessage);
+      toast.error(errorMessage);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Retorna as variáveis de estado e as funções do hook.
   return {
     vouchers,
@@ -391,6 +411,7 @@ export default function useVoucher(): UseVoucher {
     updateVoucher,
     deleteVoucher,
     exportVouchers,
-    sendVoucherWinnerEmail
+    sendVoucherWinnerEmail,
+    sendAdjustmentVoucherWinnerEmail
   };
 }
